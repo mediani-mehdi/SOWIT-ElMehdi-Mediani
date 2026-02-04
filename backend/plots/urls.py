@@ -1,0 +1,13 @@
+"""
+URL configuration for the plots app.
+"""
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import PlotViewSet
+
+router = DefaultRouter()
+router.register(r'plots', PlotViewSet, basename='plot')
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
