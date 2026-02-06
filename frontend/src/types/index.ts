@@ -1,6 +1,9 @@
 export interface Plot {
   id: number;
   name: string;
+  farm_name?: string;
+  crop_type?: string;
+  has_manager?: boolean;
   coordinates: [number, number][];
   surface_area: number | null;
   created_at: string;

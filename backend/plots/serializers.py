@@ -12,7 +12,7 @@ class PlotSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Plot
-        fields = ['id', 'name', 'coordinates', 'surface_area', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'farm_name', 'crop_type', 'has_manager', 'coordinates', 'surface_area', 'created_at', 'updated_at']
         read_only_fields = ['surface_area', 'created_at', 'updated_at']
 
     def validate_coordinates(self, value):

@@ -25,9 +25,13 @@ export default function MapBox({
 }: MapBoxProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapLoaded = useRef(false);
+  const [mapReady, setMapReady] = useState(false);
   const drawingMarkers = useRef<mapboxgl.Marker[]>([]);
   const plotLayers = useRef<string[]>([]);
+  
+  // Track added layers and sources to clean up properly
+  const addedFeatures = useRef<{ layers: string[]; sources: string[] }>({ layers: [], sources: [] });
 
   // Initialize map
   useEffect(() => {
@@ -41,7 +45,10 @@ export default function MapBox({
     });
 
     map.current.on('load', () => {
-      setMapLoaded(true);
+      mapLoaded.current = true;
+      setMapReady(true);
+      // Change cursor when drawing
+      map.current?.getCanvas().style.setProperty('cursor', 'default');
     });
 
     // Add navigation controls
@@ -50,12 +57,20 @@ export default function MapBox({
     return () => {
       map.current?.remove();
       map.current = null;
+      mapLoaded.current = false;
+      setMapReady(false);
     };
   }, []);
 
   // Handle map click for drawing
   useEffect(() => {
-    if (!map.current || !mapLoaded) return;
+    if (!map.current || !mapReady) return;
+
+    if (drawingMode === 'drawing') {
+      map.current.getCanvas().style.cursor = 'crosshair';
+    } else {
+      map.current.getCanvas().style.cursor = '';
+    }
 
     const handleClick = (e: mapboxgl.MapMouseEvent) => {
       if (drawingMode === 'drawing') {
@@ -67,12 +82,13 @@ export default function MapBox({
 
     return () => {
       map.current?.off('click', handleClick);
+      map.current?.getCanvas().style.removeProperty('cursor');
     };
-  }, [drawingMode, mapLoaded, onMapClick]);
+  }, [drawingMode, mapReady, onMapClick]);
 
   // Update drawing markers and line
   useEffect(() => {
-    if (!map.current || !mapLoaded) return;
+    if (!map.current || !mapReady) return;
 
     // Clear existing drawing markers
     drawingMarkers.current.forEach(marker => marker.remove());
@@ -170,22 +186,33 @@ export default function MapBox({
         });
       }
     }
-  }, [drawingPoints, drawingMode, mapLoaded]);
+  }, [drawingPoints, drawingMode, mapReady]);
 
   // Render saved plots
   useEffect(() => {
-    if (!map.current || !mapLoaded) return;
+    if (!map.current || !mapReady) return;
 
-    // Remove existing plot layers
-    plotLayers.current.forEach(layerId => {
+    // Remove existing plot layers and sources
+    addedFeatures.current.layers.forEach(layerId => {
       if (map.current?.getLayer(layerId)) {
         map.current.removeLayer(layerId);
       }
-      if (map.current?.getSource(layerId)) {
-        map.current.removeSource(layerId);
+    });
+    addedFeatures.current.sources.forEach(sourceId => {
+      if (map.current?.getSource(sourceId)) {
+        map.current.removeSource(sourceId);
       }
     });
-    plotLayers.current = [];
+
+    // Handle legacy cleanup if transitioning from old version
+    if (plotLayers.current.length > 0) {
+      plotLayers.current.forEach(layerId => {
+        if (map.current?.getLayer(layerId)) map.current.removeLayer(layerId);
+      });
+      plotLayers.current = [];
+    }
+
+    addedFeatures.current = { layers: [], sources: [] };
 
     plots.forEach(plot => {
       if (!plot.coordinates || plot.coordinates.length < 3) return;
@@ -197,49 +224,56 @@ export default function MapBox({
 
       const isSelected = selectedPlotId === plot.id;
 
-      // Add source
-      map.current.addSource(sourceId, {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: { name: plot.name },
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[...coordinates, coordinates[0]]],
+      // Add source if not exists
+      if (!map.current?.getSource(sourceId)) {
+        map.current?.addSource(sourceId, {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: { name: plot.name },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[...coordinates, coordinates[0]]],
+            },
           },
-        },
-      });
+        });
+        addedFeatures.current.sources.push(sourceId);
+      }
 
       // Add fill layer
-      map.current.addLayer({
-        id: layerId,
-        type: 'fill',
-        source: sourceId,
-        paint: {
-          'fill-color': isSelected ? '#7CB342' : '#673AB7',
-          'fill-opacity': isSelected ? 0.5 : 0.3,
-        },
-      });
+      if (!map.current?.getLayer(layerId)) {
+        map.current?.addLayer({
+          id: layerId,
+          type: 'fill',
+          source: sourceId,
+          paint: {
+            'fill-color': isSelected ? '#7CB342' : '#673AB7',
+            'fill-opacity': isSelected ? 0.5 : 0.3,
+          },
+        });
+        addedFeatures.current.layers.push(layerId);
+      }
 
       // Add outline layer
-      map.current.addLayer({
-        id: outlineLayerId,
-        type: 'line',
-        source: sourceId,
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round',
-        },
-        paint: {
-          'line-color': isSelected ? '#558B2F' : '#4CAF50',
-          'line-width': isSelected ? 3 : 2,
-        },
-      });
-
-      plotLayers.current.push(layerId, outlineLayerId);
+      if (!map.current?.getLayer(outlineLayerId)) {
+        map.current?.addLayer({
+          id: outlineLayerId,
+          type: 'line',
+          source: sourceId,
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': isSelected ? '#558B2F' : '#4CAF50',
+            'line-width': isSelected ? 3 : 2,
+          },
+        });
+        addedFeatures.current.layers.push(outlineLayerId);
+      }
 
       // Add popup on click
-      map.current.on('click', layerId, (e) => {
+      map.current?.on('click', layerId, (e) => {
         new mapboxgl.Popup()
           .setLngLat(e.lngLat)
           .setHTML(`
@@ -252,14 +286,14 @@ export default function MapBox({
       });
 
       // Change cursor on hover
-      map.current.on('mouseenter', layerId, () => {
+      map.current?.on('mouseenter', layerId, () => {
         map.current!.getCanvas().style.cursor = 'pointer';
       });
-      map.current.on('mouseleave', layerId, () => {
+      map.current?.on('mouseleave', layerId, () => {
         map.current!.getCanvas().style.cursor = '';
       });
     });
-  }, [plots, selectedPlotId, mapLoaded]);
+  }, [plots, selectedPlotId, mapReady]);
 
   // Fly to location
   useEffect(() => {

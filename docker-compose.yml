@@ -49,8 +49,8 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
       - VITE_MAPBOX_ACCESS_TOKEN=${VITE_MAPBOX_ACCESS_TOKEN}
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
     depends_on:
       - backend
 

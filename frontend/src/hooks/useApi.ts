@@ -31,17 +31,23 @@ export function usePlots() {
     }
   }, []);
 
-  const createPlot = useCallback(async (name: string, coordinates: [number, number][]) => {
+  const createPlot = useCallback(async (data: { 
+    name: string; 
+    coordinates: [number, number][];
+    farm_name?: string;
+    crop_type?: string;
+    has_manager?: boolean;
+  }) => {
     try {
       const response = await fetch(`${API_URL}/plots/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, coordinates }),
+        body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to create plot');
-      const data = await response.json();
+      const responseData = await response.json();
       await fetchPlots(); // Refresh the list
-      return data;
+      return responseData;
     } catch (err) {
       throw err;
     }

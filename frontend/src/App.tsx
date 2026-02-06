@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import MapBox from '@/components/MapBox';
 import PlotDropdown from '@/components/PlotDropdown';
 import CreatePlotModal from '@/components/CreatePlotModal';
+import SavedPlots from '@/components/SavedPlots';
 import { usePlots, usePlotNames, usePlotCenter } from '@/hooks/useApi';
 import type { Plot, DrawingMode } from '@/types';
 
@@ -12,6 +13,7 @@ function App() {
   const { plotCenter, fetchPlotCenter } = usePlotCenter();
 
   // Local state
+  const [currentView, setCurrentView] = useState<'map' | 'list'>('map');
   const [drawingMode, setDrawingMode] = useState<DrawingMode>('none');
   const [drawingPoints, setDrawingPoints] = useState<[number, number][]>([]);
   const [selectedPlotId, setSelectedPlotId] = useState<number | null>(null);
@@ -24,6 +26,13 @@ function App() {
     fetchPlots();
     fetchPlotNames();
   }, [fetchPlots, fetchPlotNames]);
+
+  // Open modal when drawing is finished
+  useEffect(() => {
+    if (drawingMode === 'closed') {
+      setIsModalOpen(true);
+    }
+  }, [drawingMode]);
 
   // Show notification helper
   const showNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
@@ -63,9 +72,17 @@ function App() {
   }, []);
 
   // Handle save plot
-  const handleSavePlot = useCallback(async (name: string) => {
+  const handleSavePlot = useCallback(async (plotData: { 
+    name: string; 
+    farm_name?: string; 
+    crop_type?: string; 
+    has_manager?: boolean 
+  }) => {
     try {
-      await createPlot(name, drawingPoints);
+      await createPlot({
+        ...plotData,
+        coordinates: drawingPoints,
+      });
       showNotification('Plot created successfully!', 'success');
       setDrawingPoints([]);
       setDrawingMode('none');
@@ -95,20 +112,25 @@ function App() {
   }, [fetchPlotCenter, showNotification]);
 
   // Handle delete plot
-  const handleDeletePlot = useCallback(async () => {
-    if (!selectedPlotId) return;
+  const handleDeletePlot = useCallback(async (id?: number) => {
+    const targetId = id || selectedPlotId;
+    if (!targetId) return;
     
     if (confirm('Are you sure you want to delete this plot?')) {
       try {
-        await deletePlot(selectedPlotId);
+        await deletePlot(targetId);
         showNotification('Plot deleted successfully!', 'success');
-        setSelectedPlotId(null);
-        fetchPlotNames();
+        if (targetId === selectedPlotId) {
+          setSelectedPlotId(null);
+        }
+        await fetchPlotNames();
+        // Also refresh list if we are in list view
+        fetchPlots();
       } catch (err) {
         showNotification('Failed to delete plot', 'error');
       }
     }
-  }, [deletePlot, selectedPlotId, fetchPlotNames, showNotification]);
+  }, [deletePlot, selectedPlotId, fetchPlotNames, fetchPlots, showNotification]);
 
   // Handle cancel drawing
   const handleCancelDrawing = useCallback(() => {
@@ -138,7 +160,7 @@ function App() {
   return (
     <div className="h-screen flex flex-col bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3">
+      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 z-20 relative">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
@@ -149,6 +171,29 @@ function App() {
               <p className="text-xs text-gray-500">MapBox + Django + PostgreSQL</p>
             </div>
           </div>
+
+          <nav className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={() => setCurrentView('map')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                currentView === 'map'
+                  ? 'bg-white text-primary shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Map View
+            </button>
+            <button
+              onClick={() => setCurrentView('list')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                currentView === 'list'
+                  ? 'bg-white text-primary shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Saved Plots
+            </button>
+          </nav>
 
           <div className="flex items-center gap-4">
             <a
@@ -173,7 +218,9 @@ function App() {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
+        {currentView === 'map' ? (
+          <>
+            {/* Sidebar */}
         <aside className="w-80 bg-white shadow-lg flex flex-col z-10">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800 mb-1">Controls</h2>
@@ -194,18 +241,42 @@ function App() {
               </p>
             </div>
 
-            {/* Create Plot Button */}
+            {/* Create/Cancel Plot Buttons */}
             <div>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                disabled={drawingMode === 'drawing'}
-                className="w-full py-3 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create New Plot
-              </button>
+              {drawingMode === 'none' ? (
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full py-3 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create New Plot
+                </button>
+              ) : (
+                <div className="space-y-2 animate-fade-in">
+                  <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-800">
+                    <p className="font-semibold flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                      Recording Mode
+                    </p>
+                    <ul className="list-disc list-inside mt-1 text-blue-700 ml-1">
+                      <li>Click map to add points</li>
+                      <li>Click first point to finish</li>
+                    </ul>
+                  </div>
+                  
+                  <button
+                    onClick={handleCancelDrawing}
+                    className="w-full py-3 px-4 bg-white border-2 border-red-500 text-red-500 rounded-lg font-medium hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Cancel Drawing
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Selected Plot Info */}
@@ -289,7 +360,29 @@ function App() {
             onMapClick={handleMapClick}
             flyToLocation={flyToLocation}
           />
+
+          {/* Controls overlay for drawing mode */}
+          {drawingMode === 'drawing' && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200 z-10 flex items-center gap-3 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span className="text-sm font-medium text-gray-800">Recording Points</span>
+              </div>
+              <div className="h-4 w-px bg-gray-300"></div>
+              <span className="text-sm text-gray-600 font-mono">
+                {drawingPoints.length} points
+              </span>
+            </div>
+          )}
         </main>
+          </>
+        ) : (
+          <SavedPlots 
+            plots={plots || []} 
+            loading={plotsLoading} 
+            onDelete={handleDeletePlot}
+          />
+        )}
       </div>
 
       {/* Create Plot Modal */}

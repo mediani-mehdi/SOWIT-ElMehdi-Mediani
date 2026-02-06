@@ -9,6 +9,9 @@ class Plot(models.Model):
     Model to store polygon plots with their coordinates.
     """
     name = models.CharField(max_length=255)
+    farm_name = models.CharField(max_length=255, blank=True, null=True, help_text="Name of the farm (Exploitation)")
+    crop_type = models.CharField(max_length=255, blank=True, null=True, help_text="Type of crop")
+    has_manager = models.BooleanField(default=False, help_text="Whether a plot manager is assigned")
     coordinates = models.JSONField(help_text="List of [lat, lng] coordinates forming the polygon")
     surface_area = models.FloatField(null=True, blank=True, help_text="Surface area in hectares")
     created_at = models.DateTimeField(auto_now_add=True)

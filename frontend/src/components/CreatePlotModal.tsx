@@ -5,7 +5,7 @@ interface CreatePlotModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartDrawing: () => void;
-  onSavePlot: (name: string) => void;
+  onSavePlot: (data: { name: string; farm_name?: string; crop_type?: string; has_manager?: boolean }) => void;
   drawingMode: DrawingMode;
   drawingPoints: [number, number][];
 }
@@ -19,6 +19,9 @@ export default function CreatePlotModal({
   drawingPoints,
 }: CreatePlotModalProps) {
   const [name, setName] = useState('');
+  const [farmName, setFarmName] = useState('Bouskoura');
+  const [cropType, setCropType] = useState('');
+  const [hasManager, setHasManager] = useState(false);
   const [step, setStep] = useState<'menu' | 'drawing' | 'form'>('menu');
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -38,16 +41,17 @@ export default function CreatePlotModal({
 
   useEffect(() => {
     if (isOpen) {
-      setStep('menu');
-      setName('');
+      if (drawingMode === 'closed') {
+        setStep('form');
+      } else {
+        setStep('menu');
+        setName('');
+        setFarmName('Bouskoura');
+        setCropType('');
+        setHasManager(false);
+      }
     }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (drawingMode === 'closed') {
-      setStep('form');
-    }
-  }, [drawingMode]);
+  }, [isOpen, drawingMode]);
 
   const handleStartDrawing = () => {
     setStep('drawing');
@@ -57,7 +61,12 @@ export default function CreatePlotModal({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onSavePlot(name.trim());
+      onSavePlot({
+        name: name.trim(),
+        farm_name: farmName,
+        crop_type: cropType,
+        has_manager: hasManager,
+      });
       setName('');
       setStep('menu');
     }
@@ -161,7 +170,7 @@ export default function CreatePlotModal({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Plot Name
+                  Nom
                 </label>
                 <input
                   type="text"
@@ -175,20 +184,55 @@ export default function CreatePlotModal({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Surface Area
+                  Surface
                 </label>
                 <div className="w-full px-3 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-600">
-                  {surfaceArea.toFixed(2)} hectares
+                  {surfaceArea.toFixed(2)} ha
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Coordinates
+                  Nom de l'Exploitation
                 </label>
-                <div className="w-full px-3 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 text-sm font-mono">
-                  {drawingPoints.length} points
-                </div>
+                <select
+                  value={farmName}
+                  onChange={(e) => setFarmName(e.target.value)}
+                  className="input-field"
+                >
+                  <option value="Bouskoura">Bouskoura</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Type de culture
+                </label>
+                <select
+                  value={cropType}
+                  onChange={(e) => setCropType(e.target.value)}
+                  className="input-field"
+                >
+                  <option value="">Sélectionner</option>
+                  <option value="Wheat">Wheat</option>
+                  <option value="Corn">Corn</option>
+                  <option value="Olives">Olives</option>
+                  <option value="Vegetables">Vegetables</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="hasManager"
+                  checked={hasManager}
+                  onChange={(e) => setHasManager(e.target.checked)}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <label htmlFor="hasManager" className="text-sm font-medium text-gray-700 select-none">
+                  Ajouter un Chef de Parcelle
+                </label>
               </div>
             </div>
 
@@ -198,14 +242,14 @@ export default function CreatePlotModal({
                 onClick={handleClose}
                 className="flex-1 py-2.5 px-4 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-900 transition-colors"
               >
-                Cancel
+                Annuler
               </button>
               <button
                 type="submit"
                 disabled={!name.trim()}
                 className="flex-1 py-2.5 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Plot
+                Ajouter
               </button>
             </div>
           </form>
