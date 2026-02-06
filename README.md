@@ -9,7 +9,7 @@ This project allows users to draw polygonal plots on a map, save them to a datab
 ## 🎥 Video Demo
 
 <!-- Add your video link or gif here -->
-[Watch the Demo Video](./demo.mp4)
+[Watch the Demo Video](https://drive.google.com/file/d/1acqOGq4mL793CFIH-l2ll4Mn9dMalORP/view?usp=sharing)
 
 ### Key Features
 - **Interactive Map**: Draw polygons directly on a MapBox interface.
