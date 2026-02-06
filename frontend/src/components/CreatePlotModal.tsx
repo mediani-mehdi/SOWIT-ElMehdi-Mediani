@@ -158,14 +158,14 @@ export default function CreatePlotModal({
 
         {step === 'drawing' && (
           <div className="p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Drawing Mode</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Mode Dessin</h2>
             <p className="text-gray-500 text-sm mb-4">
-              Click on the map to place points. Click near the first point to close the polygon.
+              Cliquez sur la carte pour placer des points. Cliquez près du premier point pour fermer le polygone.
             </p>
 
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Points placed:</span>
+                <span className="text-gray-600">Points placés :</span>
                 <span className="font-semibold text-primary">{drawingPoints.length}</span>
               </div>
             </div>
@@ -183,7 +183,7 @@ export default function CreatePlotModal({
 
         {step === 'form' && (
           <form onSubmit={handleSave} className="p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Save Plot</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Sauvegarder la Parcelle</h2>
 
             <div className="space-y-4">
               <div>
@@ -194,7 +194,7 @@ export default function CreatePlotModal({
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter plot name"
+                  placeholder="Entrer le nom de la parcelle"
                   className="input-field"
                   autoFocus
                 />

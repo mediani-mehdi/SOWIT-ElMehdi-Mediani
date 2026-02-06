@@ -83,13 +83,13 @@ function App() {
         ...plotData,
         coordinates: drawingPoints,
       });
-      showNotification('Plot created successfully!', 'success');
+      showNotification('Parcelle créée avec succès !', 'success');
       setDrawingPoints([]);
       setDrawingMode('none');
       setIsModalOpen(false);
       fetchPlotNames(); // Refresh dropdown
     } catch (err) {
-      showNotification('Failed to create plot', 'error');
+      showNotification('Échec de la création de la parcelle', 'error');
     }
   }, [createPlot, drawingPoints, fetchPlotNames, showNotification]);
 
@@ -107,7 +107,7 @@ function App() {
         });
       }
     } catch (err) {
-      showNotification('Failed to load plot location', 'error');
+      showNotification("Échec du chargement de l'emplacement de la parcelle", 'error');
     }
   }, [fetchPlotCenter, showNotification]);
 
@@ -116,10 +116,10 @@ function App() {
     const targetId = id || selectedPlotId;
     if (!targetId) return;
     
-    if (confirm('Are you sure you want to delete this plot?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette parcelle ?')) {
       try {
         await deletePlot(targetId);
-        showNotification('Plot deleted successfully!', 'success');
+        showNotification('Parcelle supprimée avec succès !', 'success');
         if (targetId === selectedPlotId) {
           setSelectedPlotId(null);
         }
@@ -127,7 +127,7 @@ function App() {
         // Also refresh list if we are in list view
         fetchPlots();
       } catch (err) {
-        showNotification('Failed to delete plot', 'error');
+        showNotification('Échec de la suppression de la parcelle', 'error');
       }
     }
   }, [deletePlot, selectedPlotId, fetchPlotNames, fetchPlots, showNotification]);
@@ -251,18 +251,18 @@ function App() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Create New Plot
+                  Créer une Nouvelle Parcelle
                 </button>
               ) : (
                 <div className="space-y-2 animate-fade-in">
                   <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-800">
                     <p className="font-semibold flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                      Recording Mode
+                      Mode Enregistrement
                     </p>
                     <ul className="list-disc list-inside mt-1 text-blue-700 ml-1">
-                      <li>Click map to add points</li>
-                      <li>Click first point to finish</li>
+                      <li>Cliquez sur la carte pour ajouter des points</li>
+                      <li>Cliquez sur le premier point pour terminer</li>
                     </ul>
                   </div>
                   
@@ -273,7 +273,7 @@ function App() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    Cancel Drawing
+                    Annuler le Dessin
                   </button>
                 </div>
               )}
@@ -282,14 +282,14 @@ function App() {
             {/* Selected Plot Info */}
             {selectedPlotId && plots && (
               <div className="bg-gray-50 rounded-lg p-4 animate-fade-in">
-                <h3 className="font-medium text-gray-800 mb-2">Selected Plot</h3>
+                <h3 className="font-medium text-gray-800 mb-2">Parcelle Sélectionnée</h3>
                 {(() => {
                   const plot = plots.find(p => p.id === selectedPlotId);
                   if (!plot) return null;
                   return (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Name:</span>
+                        <span className="text-gray-500">Nom:</span>
                         <span className="font-medium">{plot.name}</span>
                       </div>
                       <div className="flex justify-between text-sm">
@@ -307,7 +307,7 @@ function App() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Delete Plot
+                        Supprimer la Parcelle
                       </button>
                     </div>
                   );
@@ -317,17 +317,17 @@ function App() {
 
             {/* Stats */}
             <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-medium text-gray-800 mb-3">Statistics</h3>
+              <h3 className="font-medium text-gray-800 mb-3">Statistiques</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-white rounded-lg p-3 text-center">
                   <div className="text-2xl font-bold text-primary">{plots?.length || 0}</div>
-                  <div className="text-xs text-gray-500">Total Plots</div>
+                  <div className="text-xs text-gray-500">Total Parcelles</div>
                 </div>
                 <div className="bg-white rounded-lg p-3 text-center">
                   <div className="text-2xl font-bold text-primary">
                     {plots?.reduce((sum, p) => sum + (p.surface_area || 0), 0).toFixed(1) || '0'}
                   </div>
-                  <div className="text-xs text-gray-500">Total Area (ha)</div>
+                  <div className="text-xs text-gray-500">Surface Totale (ha)</div>
                 </div>
               </div>
             </div>
@@ -338,13 +338,13 @@ function App() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                How to use
+                Comment utiliser
               </h3>
               <ul className="text-sm text-blue-700 space-y-1.5 list-disc list-inside">
-                <li>Click "Create New Plot" to start</li>
-                <li>Click on the map to place points</li>
-                <li>Click near first point to close</li>
-                <li>Select plot from dropdown to fly to it</li>
+                <li>Cliquez sur "Créer une Nouvelle Parcelle" pour commencer</li>
+                <li>Cliquez sur la carte pour placer des points</li>
+                <li>Cliquez près du premier point pour fermer</li>
+                <li>Sélectionnez une parcelle dans le menu pour la voir</li>
               </ul>
             </div>
           </div>

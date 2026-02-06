@@ -21,7 +21,7 @@ export default function PlotDropdown({
   return (
     <div className="relative">
       <label className="block text-sm font-medium text-gray-700 mb-1.5">
-        Select a Plot
+        Sélectionner une Parcelle
       </label>
       
       <button
@@ -32,12 +32,12 @@ export default function PlotDropdown({
       >
         <span className={selectedPlot ? 'text-gray-900' : 'text-gray-500'}>
           {loading 
-            ? 'Loading plots...' 
+            ? 'Chargement...' 
             : selectedPlot 
               ? selectedPlot.name 
               : plotNames.length === 0 
-                ? 'No plots available' 
-                : 'Choose a plot...'}
+                ? 'Aucune parcelle disponible' 
+                : 'Choisir une parcelle...'}
         </span>
         <svg
           className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}

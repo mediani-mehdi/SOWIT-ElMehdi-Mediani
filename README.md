@@ -6,6 +6,11 @@ A full-stack application for managing and analyzing map plots, built with Django
 
 This project allows users to draw polygonal plots on a map, save them to a database, and calculate their surface area in hectares.
 
+## 🎥 Video Demo
+
+<!-- Add your video link or gif here -->
+[Watch the Demo Video](./demo.mp4)
+
 ### Key Features
 - **Interactive Map**: Draw polygons directly on a MapBox interface.
 - **Plot Management**: Save, retrieve, and delete plots.
@@ -29,7 +34,7 @@ This project allows users to draw polygonal plots on a map, save them to a datab
 1. **Clone the repository**
    ```bash
    git clone <repository_url>
-   cd hometest
+   cd SOWIT-ElMehdi-Mediani
    ```
 
 2. **Start the application**
@@ -42,11 +47,34 @@ This project allows users to draw polygonal plots on a map, save them to a datab
    - Backend API: [http://localhost:8000/api](http://localhost:8000/api)
    - Django Admin: [http://localhost:8000/admin](http://localhost:8000/admin)
 
-### Configuration
+4. **Create Admin Account**
+   To access the Django Admin interface, you need to create a superuser:
+   ```bash
+   docker-compose exec backend python manage.py createsuperuser
+   ```
 
-The project comes with a default configuration for development.
-- **Frontend**: API URL is set via `VITE_API_URL` in `docker-compose.yml`.
-- **MapBox**: A demo token is provided in `frontend/.env`. For production, replace `VITE_MAPBOX_ACCESS_TOKEN` with your own key.
+### ⚙️ Environment Configuration
+
+You can configure the application using environment variables.
+
+#### Frontend
+The frontend requires a MapBox Access Token. You can set this in `frontend/.env` or rely on the `docker-compose.yml` defaults.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_URL` | URL of the backend API | `http://localhost:8000/api` |
+| `VITE_MAPBOX_ACCESS_TOKEN` | Your MapBox public access token | *Demo Token* |
+
+#### Backend
+The backend settings can be configured via environment variables passed to the Docker container (defined in `docker-compose.yml`).
+
+| Variable | Description |
+|----------|-------------|
+| `DEBUG` | Toggle Django debug mode (`True`/`False`) |
+| `DJANGO_SECRET_KEY` | Secret key for cryptographic signing |
+| `POSTGRES_DB` | Database name |
+| `POSTGRES_USER` | Database user |
+| `POSTGRES_PASSWORD` | Database password |
 
 ## 📦 Project Structure
 

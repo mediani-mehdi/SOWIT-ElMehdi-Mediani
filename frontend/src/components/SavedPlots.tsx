@@ -12,7 +12,7 @@ export default function SavedPlots({ plots, loading, onDelete }: SavedPlotsProps
       <div className="w-full h-full flex items-center justify-center p-8">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 font-medium">Loading plots...</p>
+          <p className="text-gray-500 font-medium">Chargement des parcelles...</p>
         </div>
       </div>
     );
@@ -27,8 +27,8 @@ export default function SavedPlots({ plots, loading, onDelete }: SavedPlotsProps
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 7m0 13V7m0 0L9 4" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">No plots found</h2>
-          <p className="text-gray-500">Go to the Map view to draw and save your first plot.</p>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Aucune parcelle trouvée</h2>
+          <p className="text-gray-500">Allez sur la carte pour dessiner et sauvegarder votre première parcelle.</p>
         </div>
       </div>
     );
@@ -38,11 +38,11 @@ export default function SavedPlots({ plots, loading, onDelete }: SavedPlotsProps
     <div className="p-8 max-w-7xl mx-auto w-full h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Saved Plots</h2>
-          <p className="text-gray-500 mt-1">Manage your saved land plots and calculations</p>
+          <h2 className="text-2xl font-bold text-gray-800">Parcelles Sauvegardées</h2>
+          <p className="text-gray-500 mt-1">Gérez vos parcelles et calculs sauvegardés</p>
         </div>
         <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm text-gray-600">
-          Total Plots: <span className="font-semibold text-gray-900">{plots.length}</span>
+          Total Parcelles: <span className="font-semibold text-gray-900">{plots.length}</span>
         </div>
       </div>
 
@@ -52,11 +52,11 @@ export default function SavedPlots({ plots, loading, onDelete }: SavedPlotsProps
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">ID</th>
-                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Farm</th>
-                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Crop</th>
+                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Nom</th>
+                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Ferme</th>
+                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Culture</th>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Surface</th>
-                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Manager</th>
+                <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Gestionnaire</th>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 font-semibold text-gray-700 text-sm uppercase tracking-wider text-right">Actions</th>
               </tr>
@@ -81,9 +81,9 @@ export default function SavedPlots({ plots, loading, onDelete }: SavedPlotsProps
                     {plot.has_manager ? (
                       <span className="text-primary flex items-center gap-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                        Yes
+                        Oui
                       </span>
-                    ) : <span className="text-gray-400">No</span>}
+                    ) : <span className="text-gray-400">Non</span>}
                   </td>
                   <td className="px-6 py-4 text-gray-500 text-sm">
                     {new Date(plot.created_at).toLocaleDateString()}
@@ -93,7 +93,7 @@ export default function SavedPlots({ plots, loading, onDelete }: SavedPlotsProps
                       onClick={() => onDelete(plot.id)}
                       className="text-red-600 hover:text-red-900 font-medium text-sm px-3 py-1 rounded hover:bg-red-50 transition-colors"
                     >
-                      Delete
+                      Supprimer
                     </button>
                   </td>
                 </tr>
