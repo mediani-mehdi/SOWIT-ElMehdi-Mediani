@@ -2,6 +2,7 @@
 Models for the plots app.
 """
 from django.db import models
+import math
 
 
 class Plot(models.Model):
@@ -25,27 +26,48 @@ class Plot(models.Model):
 
     def calculate_surface_area(self):
         """
-        Calculate the surface area of the polygon using the shoelace formula.
+        Calculate the surface area of the polygon.
+        Projects coordinates to a local flat plane (in meters) and then calculates area.
         Returns area in hectares.
         """
         if not self.coordinates or len(self.coordinates) < 3:
             return 0
         
         coords = self.coordinates
-        n = len(coords)
-        area = 0
+        
+        # Calculate center latitude to determine longitude conversion factor
+        latitudes = [c[0] for c in coords]
+        center_lat = sum(latitudes) / len(latitudes)
+        
+        # Conversion factors (approximate meters per degree)
+        # 1 deg latitude ~= 111,320 meters
+        # 1 deg longitude ~= 111,320 * cos(latitude) meters
+        METERS_PER_DEG_LAT = 111320
+        METERS_PER_DEG_LNG = 111320 * math.cos(math.radians(center_lat))
+        
+        # Convert to local meter coordinates (relative to the first point to keep numbers smaller)
+        ref_lat, ref_lng = coords[0]
+        projected_coords = []
+        
+        for lat, lng in coords:
+            y = (lat - ref_lat) * METERS_PER_DEG_LAT
+            x = (lng - ref_lng) * METERS_PER_DEG_LNG
+            projected_coords.append((x, y))
+            
+        # Shoelace formula
+        n = len(projected_coords)
+        area_sq_meters = 0
         
         for i in range(n):
             j = (i + 1) % n
-            area += coords[i][1] * coords[j][0]  # lng1 * lat2
-            area -= coords[j][1] * coords[i][0]  # lng2 * lat1
+            # x_i * y_{i+1} - x_{i+1} * y_i
+            area_sq_meters += projected_coords[i][0] * projected_coords[j][1]
+            area_sq_meters -= projected_coords[j][0] * projected_coords[i][1]
         
-        area = abs(area) * 0.5
+        area_sq_meters = abs(area_sq_meters) * 0.5
         
-        # Convert to hectares (rough approximation)
-        # At equator, 1 degree ≈ 111.32 km
-        # 1 square degree ≈ 12390 km² ≈ 1239000 hectares
-        hectares = area * 12390  # Approximate conversion
+        # Convert to hectares (1 ha = 10,000 m²)
+        hectares = area_sq_meters / 10000
         
         return round(hectares, 4)
 

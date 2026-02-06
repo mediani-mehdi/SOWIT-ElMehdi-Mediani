@@ -28,13 +28,31 @@ export default function CreatePlotModal({
   // Calculate surface area
   const calculateArea = (points: [number, number][]) => {
     if (points.length < 3) return 0;
+    
+    // lat is p[0], lng is p[1]
+    const latitudes = points.map(p => p[0]);
+    const centerLat = latitudes.reduce((a, b) => a + b, 0) / latitudes.length;
+    
+    const METERS_PER_DEG_LAT = 111320;
+    const METERS_PER_DEG_LNG = 111320 * Math.cos(centerLat * (Math.PI / 180));
+    
+    const refLat = points[0][0];
+    const refLng = points[0][1];
+    
+    const projectedPoints = points.map(p => ({
+      x: (p[1] - refLng) * METERS_PER_DEG_LNG,
+      y: (p[0] - refLat) * METERS_PER_DEG_LAT
+    }));
+    
     let area = 0;
-    for (let i = 0; i < points.length; i++) {
-      const j = (i + 1) % points.length;
-      area += points[i][1] * points[j][0];
-      area -= points[j][1] * points[i][0];
+    for (let i = 0; i < projectedPoints.length; i++) {
+      const j = (i + 1) % projectedPoints.length;
+      area += projectedPoints[i].x * projectedPoints[j].y;
+      area -= projectedPoints[j].x * projectedPoints[i].y;
     }
-    return Math.abs(area) * 0.5 * 12390; // Rough conversion to hectares
+    
+    const areaSqMeters = Math.abs(area) * 0.5;
+    return areaSqMeters / 10000; // Convert to hectares
   };
 
   const surfaceArea = calculateArea(drawingPoints);
